@@ -1,16 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/moficodes/bookdata/api/loader"
+	"github.com/gorilla/mux"
+	"github.com/moficodes/bookdata/api/datastore"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
 var (
-	books *[]*loader.BookData
+	books datastore.BookStore
+	empty string = "{}"
 )
 
 func timeTrack(start time.Time, name string) {
@@ -18,25 +20,52 @@ func timeTrack(start time.Time, name string) {
 	log.Printf("%s took %s", name, elapsed)
 }
 
-func init(){
+func init() {
 	defer timeTrack(time.Now(), "file load")
-	file, err := os.Open("assets/books.csv")
-	if err != nil {
-		log.Fatalln(err)
+	books = &datastore.Books{}
+	books.Initialize()
+}
+
+func searchByAuthor(w http.ResponseWriter, r *http.Request) {
+	queries := mux.Vars(r)
+	val, ok := queries["author"]
+	if ok {
+		data := *books.SearchAuthor(val)
+		b, err := json.Marshal(data)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
 	}
-	defer file.Close()
-	books = loader.LoadData(file)
+	w.WriteHeader(http.StatusNotFound)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Fprintln(w,len(*books))
-	fmt.Fprintln(w, "Hello")
+func searchByBookName(w http.ResponseWriter, r *http.Request) {
+	queries := mux.Vars(r)
+	val, ok := queries["book"]
+	if ok {
+		data := *books.SearchBook(val)
+		b, err := json.Marshal(data)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	}
+	w.WriteHeader(http.StatusNotFound)
 }
 
-func main(){
+func main() {
+	r := mux.NewRouter()
 	log.Println("bookdata api")
-	http.HandleFunc("/",home)
-	log.Fatalln(http.ListenAndServe(":8080", nil))
+	api := r.PathPrefix("/api/v1").Subrouter()
+	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "api v1")
+	})
+	api.HandleFunc("/authors/{author}", searchByAuthor).Methods("GET")
+	api.HandleFunc("/books/{book}", searchByBookName).Methods("GET")
+	log.Fatalln(http.ListenAndServe(":8080", r))
 }
-
