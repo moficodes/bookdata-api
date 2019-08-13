@@ -35,15 +35,10 @@ func LoadData(r io.Reader) *[]*BookData {
 			break
 		}
 		averageRating, _ := strconv.ParseFloat(row[3], 64)
-		numPages, err := strconv.Atoi(row[7])
-		if err != nil {
-			log.Println(err)
-		}
-		ratings, err := strconv.Atoi(row[8])
-		if err != nil {
-			log.Println(err)
-		}
-		reviews, err := strconv.Atoi(row[9])
+		numPages, _ := strconv.Atoi(row[7])
+		ratings, _ := strconv.Atoi(row[8])
+		reviews, _ := strconv.Atoi(row[9])
+
 		if err != nil {
 			log.Println(err)
 		}
