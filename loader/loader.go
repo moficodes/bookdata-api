@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"io"
 	"log"
-	"os"
 	"strconv"
 )
 
@@ -21,13 +20,8 @@ type BookData struct {
 	Reviews       int     `json:"reviews"`
 }
 
-func LoadData(fileName string) *[]*BookData {
-	f, err := os.Open(fileName)
-	reader := csv.NewReader(f)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer f.Close()
+func LoadData(r io.Reader) *[]*BookData {
+	reader := csv.NewReader(r)
 
 	ret := make([]*BookData, 0, 0)
 
