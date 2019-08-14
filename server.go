@@ -12,7 +12,6 @@ import (
 
 var (
 	books datastore.BookStore
-	empty string = "{}"
 )
 
 func timeTrack(start time.Time, name string) {
