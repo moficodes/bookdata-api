@@ -1,0 +1,9 @@
+---
+applications:
+- name: <your-app-name>
+  random-route: true
+  memory: 256M
+  env:
+    GOVERSION: go1.12
+    GOPACKAGENAME: bookdata-api
+  buildpack: https://github.com/cloudfoundry/go-buildpack.git
