@@ -12,6 +12,7 @@ import (
 
 var (
 	books datastore.BookStore
+
 )
 
 func timeTrack(start time.Time, name string) {
@@ -23,6 +24,27 @@ func init() {
 	defer timeTrack(time.Now(), "file load")
 	books = &datastore.Books{}
 	books.Initialize()
+}
+
+func searchByISBN(w http.ResponseWriter, r *http.Request) {
+	queries := mux.Vars(r)
+	val, ok := queries["isbn"]
+	if ok {
+		data := books.SearchISBN(val)
+		if data != nil {
+			b, err := json.Marshal(data)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(b)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "not found"}`))
 }
 
 func searchByAuthor(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +59,7 @@ func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
+		return
 	}
 	w.WriteHeader(http.StatusNotFound)
 }
@@ -53,6 +76,7 @@ func searchByBookName(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
+		return
 	}
 	w.WriteHeader(http.StatusNotFound)
 }
@@ -66,5 +90,6 @@ func main() {
 	})
 	api.HandleFunc("/authors/{author}", searchByAuthor).Methods("GET")
 	api.HandleFunc("/books/{book}", searchByBookName).Methods("GET")
+	api.HandleFunc("/isbn/{isbn}", searchByISBN).Methods("GET")
 	log.Fatalln(http.ListenAndServe(":8080", r))
 }

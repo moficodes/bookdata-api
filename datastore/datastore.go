@@ -6,4 +6,5 @@ type BookStore interface {
 	Initialize()
 	SearchAuthor(author string) *[]*loader.BookData
 	SearchBook(bookName string) *[]*loader.BookData
+	SearchISBN(isbn string) *loader.BookData
 }

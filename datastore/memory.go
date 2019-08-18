@@ -37,6 +37,16 @@ func (b *Books) SearchBook(bookName string) *[]*loader.BookData {
 	return ret
 }
 
+func (b *Books) SearchISBN(isbn string) *loader.BookData {
+	ret := Filter(b.Store, func(v *loader.BookData) bool {
+		return strings.ToLower(v.ISBN) == isbn
+	})
+	if len(*ret) > 0 {
+		return (*ret)[0]
+	}
+	return nil
+}
+
 func Filter(vs *[]*loader.BookData, f func(*loader.BookData) bool) *[]*loader.BookData {
 	vsf := make([]*loader.BookData, 0)
 	for _, v := range *vs {
