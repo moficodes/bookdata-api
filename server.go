@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/moficodes/bookdata/api/datastore"
+	"github.com/moficodes/bookdata/api/loader"
 	"log"
 	"net/http"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 var (
 	books datastore.BookStore
-
 )
 
 func timeTrack(start time.Time, name string) {
@@ -45,6 +45,29 @@ func searchByISBN(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte(`{"error": "not found"}`))
+}
+
+func createBook(w http.ResponseWriter, r *http.Request) {
+	ok := books.CreateBook(&loader.BookData{
+		BookID:        "007",
+		Title:         "NEW BOOK",
+		Authors:       "MOFI",
+		AverageRating: 0,
+		ISBN:          "123123",
+		ISBN13:        "123123123",
+		LanguageCode:  "en",
+		NumPages:      0,
+		Ratings:       0,
+		Reviews:       0,
+	})
+	w.Header().Set("Content-Type", "application/json")
+	if ok {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": "created"}`))
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "not created"}`))
 }
 
 func searchByAuthor(w http.ResponseWriter, r *http.Request) {
@@ -88,8 +111,9 @@ func main() {
 	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "api v1")
 	})
-	api.HandleFunc("/authors/{author}", searchByAuthor).Methods("GET")
-	api.HandleFunc("/books/{book}", searchByBookName).Methods("GET")
-	api.HandleFunc("/isbn/{isbn}", searchByISBN).Methods("GET")
-	log.Fatalln(http.ListenAndServe(":8080", r))
+	api.HandleFunc("/authors/{author}", searchByAuthor).Methods(http.MethodGet)
+	api.HandleFunc("/books/{book}", searchByBookName).Methods(http.MethodGet)
+	api.HandleFunc("/isbn/{isbn}", searchByISBN).Methods(http.MethodGet)
+	api.HandleFunc("/create", createBook).Methods(http.MethodPost)
+	log.Fatalln(http.ListenAndServe(":8080g", r))
 }

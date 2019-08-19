@@ -47,6 +47,37 @@ func (b *Books) SearchISBN(isbn string) *loader.BookData {
 	return nil
 }
 
+func (b *Books) CreateBook(book *loader.BookData) bool {
+	*b.Store = append(*b.Store, book)
+	return true
+}
+
+func (b *Books) DeleteBook(isbn string) bool {
+	indexToDelete := -1
+	for i, v := range *b.Store {
+		if v.ISBN == isbn {
+			indexToDelete = i
+			break
+		}
+	}
+	if indexToDelete >= 0 {
+		(*b.Store)[indexToDelete], (*b.Store)[len(*b.Store)-1] = (*b.Store)[len(*b.Store)-1], (*b.Store)[indexToDelete]
+		*b.Store = (*b.Store)[:len(*b.Store)-1]
+		return true
+	}
+	return false
+}
+
+func (b *Books) UpdateBook(isbn string, book *loader.BookData) bool {
+	for _, v := range *b.Store {
+		if v.ISBN == isbn {
+			v = book
+			return true
+		}
+	}
+	return false
+}
+
 func Filter(vs *[]*loader.BookData, f func(*loader.BookData) bool) *[]*loader.BookData {
 	vsf := make([]*loader.BookData, 0)
 	for _, v := range *vs {
