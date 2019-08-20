@@ -89,7 +89,7 @@ func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 
 func searchByBookName(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
-	val, ok := queries["book"]
+	val, ok := queries["bookName"]
 	if ok {
 		data := *books.SearchBook(val)
 		b, err := json.Marshal(data)
@@ -104,6 +104,10 @@ func searchByBookName(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
+func deleteByISBN(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 	r := mux.NewRouter()
 	log.Println("bookdata api")
@@ -111,9 +115,12 @@ func main() {
 	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "api v1")
 	})
-	api.HandleFunc("/authors/{author}", searchByAuthor).Methods(http.MethodGet)
-	api.HandleFunc("/books/{book}", searchByBookName).Methods(http.MethodGet)
-	api.HandleFunc("/isbn/{isbn}", searchByISBN).Methods(http.MethodGet)
-	api.HandleFunc("/create", createBook).Methods(http.MethodPost)
-	log.Fatalln(http.ListenAndServe(":8080g", r))
+	api.HandleFunc("/books/authors/{author}", searchByAuthor).Methods(http.MethodGet).q
+	api.HandleFunc("/books/book-name/{bookName}", searchByBookName).Methods(http.MethodGet)
+	api.HandleFunc("/book/isbn/{isbn}", searchByISBN).Methods(http.MethodGet)
+	api.HandleFunc("/book/isbn/{isbn}", deleteByISBN).Methods(http.MethodDelete)
+	api.HandleFunc("/book", createBook).Methods(http.MethodPost)
+	log.Fatalln(http.ListenAndServe(":8080", r))
 }
+
+
