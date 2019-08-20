@@ -8,6 +8,7 @@ import (
 	"github.com/moficodes/bookdata/api/loader"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -48,17 +49,27 @@ func searchByISBN(w http.ResponseWriter, r *http.Request) {
 }
 
 func createBook(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("error parsing form")
+	}
+
+	avgRating, _ := strconv.ParseFloat(r.FormValue("AverageRating"), 64)
+	numPages, _ := strconv.Atoi(r.FormValue("NumPages"))
+	ratings, _ := strconv.Atoi(r.FormValue("Ratings"))
+	reviews, _ := strconv.Atoi(r.FormValue("Reviews"))
+
 	ok := books.CreateBook(&loader.BookData{
-		BookID:        "007",
-		Title:         "NEW BOOK",
-		Authors:       "MOFI",
-		AverageRating: 0,
-		ISBN:          "123123",
-		ISBN13:        "123123123",
-		LanguageCode:  "en",
-		NumPages:      0,
-		Ratings:       0,
-		Reviews:       0,
+		BookID:        r.FormValue("BookID"),
+		Title:         r.FormValue("Title"),
+		Authors:       r.FormValue("Authors"),
+		AverageRating: avgRating,
+		ISBN:          r.FormValue("ISBN"),
+		ISBN13:        r.FormValue("ISBN13"),
+		LanguageCode:  r.FormValue("LanguageCode"),
+		NumPages:      numPages,
+		Ratings:       ratings,
+		Reviews:       reviews,
 	})
 	w.Header().Set("Content-Type", "application/json")
 	if ok {
@@ -115,7 +126,7 @@ func main() {
 	api.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "api v1")
 	})
-	api.HandleFunc("/books/authors/{author}", searchByAuthor).Methods(http.MethodGet).q
+	api.HandleFunc("/books/authors/{author}", searchByAuthor).Methods(http.MethodGet)
 	api.HandleFunc("/books/book-name/{bookName}", searchByBookName).Methods(http.MethodGet)
 	api.HandleFunc("/book/isbn/{isbn}", searchByISBN).Methods(http.MethodGet)
 	api.HandleFunc("/book/isbn/{isbn}", deleteByISBN).Methods(http.MethodDelete)
