@@ -48,38 +48,6 @@ func searchByISBN(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"error": "not found"}`))
 }
 
-func createBook(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		fmt.Println("error parsing form")
-	}
-
-	avgRating, _ := strconv.ParseFloat(r.FormValue("AverageRating"), 64)
-	numPages, _ := strconv.Atoi(r.FormValue("NumPages"))
-	ratings, _ := strconv.Atoi(r.FormValue("Ratings"))
-	reviews, _ := strconv.Atoi(r.FormValue("Reviews"))
-
-	ok := books.CreateBook(&loader.BookData{
-		BookID:        r.FormValue("BookID"),
-		Title:         r.FormValue("Title"),
-		Authors:       r.FormValue("Authors"),
-		AverageRating: avgRating,
-		ISBN:          r.FormValue("ISBN"),
-		ISBN13:        r.FormValue("ISBN13"),
-		LanguageCode:  r.FormValue("LanguageCode"),
-		NumPages:      numPages,
-		Ratings:       ratings,
-		Reviews:       reviews,
-	})
-	w.Header().Set("Content-Type", "application/json")
-	if ok {
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": "created"}`))
-		return
-	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not created"}`))
-}
 
 func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
@@ -115,8 +83,57 @@ func searchByBookName(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func deleteByISBN(w http.ResponseWriter, r *http.Request) {
 
+func createBook(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("error parsing form")
+	}
+
+	avgRating, _ := strconv.ParseFloat(r.FormValue("AverageRating"), 64)
+	numPages, _ := strconv.Atoi(r.FormValue("NumPages"))
+	ratings, _ := strconv.Atoi(r.FormValue("Ratings"))
+	reviews, _ := strconv.Atoi(r.FormValue("Reviews"))
+
+	ok := books.CreateBook(&loader.BookData{
+		BookID:        r.FormValue("BookID"),
+		Title:         r.FormValue("Title"),
+		Authors:       r.FormValue("Authors"),
+		AverageRating: avgRating,
+		ISBN:          r.FormValue("ISBN"),
+		ISBN13:        r.FormValue("ISBN13"),
+		LanguageCode:  r.FormValue("LanguageCode"),
+		NumPages:      numPages,
+		Ratings:       ratings,
+		Reviews:       reviews,
+	})
+	w.Header().Set("Content-Type", "application/json")
+	if ok {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": "created"}`))
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "not created"}`))
+}
+
+func deleteByISBN(w http.ResponseWriter, r *http.Request) {
+	queries := mux.Vars(r)
+	val, ok := queries["isbn"]
+	w.Header().Set("Content-Type", "application/json")
+	if ok {
+		deleted := books.DeleteBook(val)
+		if deleted {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success": "deleted"}`))
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "not deleted"}`))
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "not found"}`))
 }
 
 func main() {
