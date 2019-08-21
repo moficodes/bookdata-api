@@ -21,20 +21,27 @@ func (b *Books) Initialize() {
 	b.Store = loader.LoadData(file)
 }
 
-func (b *Books) SearchAuthor(author string) *[]*loader.BookData {
+func (b *Books) SearchAuthor(author string, ratingOver, ratingBelow float64, limit, skip int) *[]*loader.BookData {
 	ret := Filter(b.Store, func(v *loader.BookData) bool {
-		return strings.Contains(strings.ToLower(v.Authors), author)
+		return strings.Contains(strings.ToLower(v.Authors), author) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
 	})
-
-	return ret
+	if limit == 0 || limit > len(*ret) {
+		limit = len(*ret)
+	}
+	data := (*ret)[skip:limit]
+	return &data
 }
 
-func (b *Books) SearchBook(bookName string) *[]*loader.BookData {
+func (b *Books) SearchBook(bookName string, ratingOver, ratingBelow float64, limit, skip int) *[]*loader.BookData {
 	ret := Filter(b.Store, func(v *loader.BookData) bool {
-		return strings.Contains(strings.ToLower(v.Title), bookName)
+		return strings.Contains(strings.ToLower(v.Title), bookName) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
 	})
+	if limit == 0 || limit > len(*ret) {
+		limit = len(*ret)
+	}
 
-	return ret
+	data := (*ret)[skip:limit]
+	return &data
 }
 
 func (b *Books) SearchISBN(isbn string) *loader.BookData {
