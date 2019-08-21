@@ -58,7 +58,9 @@ func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 		data := *books.SearchAuthor(val)
 		b, err := json.Marshal(data)
 		if err != nil {
-			log.Fatalln(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(`{"error": "error marshalling data"}`))
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
