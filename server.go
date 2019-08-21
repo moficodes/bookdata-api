@@ -30,20 +30,21 @@ func init() {
 func searchByISBN(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
 	val, ok := queries["isbn"]
+	w.Header().Set("Content-Type", "application/json")
 	if ok {
 		data := books.SearchISBN(val)
 		if data != nil {
 			b, err := json.Marshal(data)
 			if err != nil {
-				log.Fatalln(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`{"error": "error marshalling data"}`))
+				return
 			}
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			w.Write(b)
 			return
 		}
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte(`{"error": "not found"}`))
 }
@@ -52,13 +53,13 @@ func searchByISBN(w http.ResponseWriter, r *http.Request) {
 func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
 	val, ok := queries["author"]
+	w.Header().Set("Content-Type", "application/json")
 	if ok {
 		data := *books.SearchAuthor(val)
 		b, err := json.Marshal(data)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
 		return
@@ -69,13 +70,13 @@ func searchByAuthor(w http.ResponseWriter, r *http.Request) {
 func searchByBookName(w http.ResponseWriter, r *http.Request) {
 	queries := mux.Vars(r)
 	val, ok := queries["bookName"]
+	w.Header().Set("Content-Type", "application/json")
 	if ok {
 		data := *books.SearchBook(val)
 		b, err := json.Marshal(data)
 		if err != nil {
-			log.Fatalln(err)
+			w.Header()
 		}
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(b)
 		return
@@ -85,9 +86,12 @@ func searchByBookName(w http.ResponseWriter, r *http.Request) {
 
 
 func createBook(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	err := r.ParseForm()
 	if err != nil {
-		fmt.Println("error parsing form")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "body not parsed"}`))
+		return
 	}
 
 	avgRating, _ := strconv.ParseFloat(r.FormValue("AverageRating"), 64)
@@ -107,7 +111,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 		Ratings:       ratings,
 		Reviews:       reviews,
 	})
-	w.Header().Set("Content-Type", "application/json")
 	if ok {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(`{"success": "created"}`))
