@@ -1,10 +1,11 @@
 package datastore
 
 import (
-	"github.com/moficodes/bookdata/api/loader"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/moficodes/bookdata/api/loader"
 )
 
 type Books struct {
@@ -23,7 +24,7 @@ func (b *Books) Initialize() {
 
 func (b *Books) SearchAuthor(author string, ratingOver, ratingBelow float64, limit, skip int) *[]*loader.BookData {
 	ret := Filter(b.Store, func(v *loader.BookData) bool {
-		return strings.Contains(strings.ToLower(v.Authors), author) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
+		return strings.Contains(strings.ToLower(v.Authors), strings.ToLower(author)) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
 	})
 	if limit == 0 || limit > len(*ret) {
 		limit = len(*ret)
@@ -34,7 +35,7 @@ func (b *Books) SearchAuthor(author string, ratingOver, ratingBelow float64, lim
 
 func (b *Books) SearchBook(bookName string, ratingOver, ratingBelow float64, limit, skip int) *[]*loader.BookData {
 	ret := Filter(b.Store, func(v *loader.BookData) bool {
-		return strings.Contains(strings.ToLower(v.Title), bookName) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
+		return strings.Contains(strings.ToLower(v.Title), strings.ToLower(bookName)) && v.AverageRating > ratingOver && v.AverageRating < ratingBelow
 	})
 	if limit == 0 || limit > len(*ret) {
 		limit = len(*ret)
@@ -46,7 +47,7 @@ func (b *Books) SearchBook(bookName string, ratingOver, ratingBelow float64, lim
 
 func (b *Books) SearchISBN(isbn string) *loader.BookData {
 	ret := Filter(b.Store, func(v *loader.BookData) bool {
-		return strings.ToLower(v.ISBN) == isbn
+		return strings.ToLower(v.ISBN) == strings.ToLower(isbn)
 	})
 	if len(*ret) > 0 {
 		return (*ret)[0]
